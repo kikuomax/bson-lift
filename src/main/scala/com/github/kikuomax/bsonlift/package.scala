@@ -2,8 +2,14 @@ package com.github.kikuomax
 
 import org.bson.{
   BsonDocument => JavaBsonDocument,
+  BsonElement => JavaBsonElement,
   BsonValue => JavaBsonValue
 }
+import scala.collection.JavaConversions.{
+  mapAsScalaMap,
+  seqAsJavaList
+}
+import scala.collection.mutable
 import scala.language.implicitConversions
 
 package object bsonlift {
@@ -27,7 +33,47 @@ package object bsonlift {
    * @param underlying
    *     Underlying BSON document.
    */
-  implicit class BsonDocument(val underlying: JavaBsonDocument)
+  implicit class BsonDocument(val underlying: JavaBsonDocument) {
+    /**
+     * Returns the value associated with a given key.
+     *
+     * @param k
+     *     Key associated with the requested value.
+     * @return
+     *     Value associated with `k`.
+     * @throws java.util.NoSuchElementException
+     *     If no value is associated with `k`.
+     */
+    def \(k: String): JavaBsonValue = (this \? k).get
+
+    /**
+     * Returns the optional value associated with a given key.
+     *
+     * @param k
+     *     Key associated with the requested value.
+     * @return
+     *     Optional value associated with `k`.
+     */
+    def \?(k: String): Option[JavaBsonValue] = Option(underlying.get(k))
+
+    /**
+     * Creates a new document which has the same elements as this document
+     * except the elements associated with given keys.
+     *
+     * @param ks
+     *     Keys to be removed.
+     * @return
+     *     New document which has the same elements as this document except
+     *     the elements associated with the keys in `ks`.
+     */
+    def -(ks: String*): JavaBsonDocument = {
+      // NOTE: does not call underlying.clone() to avoid a deep copy
+      val subdoc = (underlying: mutable.Map[String, JavaBsonValue]) -- ks
+      new JavaBsonDocument(subdoc.map {
+        case (k, v) => new JavaBsonElement(k, v)
+      }(collection.breakOut): List[JavaBsonElement])
+    }
+  }
 
   /** Companion object of [[BsonDocument]]. */
   object BsonDocument {
