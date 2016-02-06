@@ -22,7 +22,22 @@ package object bsonlift {
    * @param underlying
    *     Underlying BSON value.
    */
-  implicit class BsonValue(val underlying: JavaBsonValue)
+  implicit class BsonValue(val underlying: JavaBsonValue) {
+    /**
+     * Converts the underlying BSON value into a given type.
+     *
+     * @tparam T
+     *     Type of the destination value.
+     * @param reader
+     *     Converter from the underlying BSON value into a value of the type
+     *     `T`.
+     * @return
+     *     Value of the type `T` equivalent to the underlying BSON value.
+     * @throws BsonReaderException
+     *     If the underlying BSON value is not convertible into `T`.
+     */
+    def as[T](implicit reader: BsonReader[T]): T = reader.read(underlying)
+  }
 
   /**
    * Augmented `org.bson.BsonDocument`.
