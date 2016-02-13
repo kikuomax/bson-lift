@@ -52,14 +52,17 @@ package object bsonlift {
     /**
      * Returns the value associated with a given key.
      *
+     * This method may return `null` to keep the transparency of the underlying
+     * `org.bson.BsonDocument`.
+     * Please consider about using [[getOpt]] istead.
+     *
      * @param k
      *     Key associated with the requested value.
      * @return
      *     Value associated with `k`.
-     * @throws java.util.NoSuchElementException
-     *     If no value is associated with `k`.
+     *     `null` if no value is associated with `k`.
      */
-    def \(k: String): JavaBsonValue = (this \? k).get
+    def get(k: String): JavaBsonValue = underlying.get(k)
 
     /**
      * Returns the optional value associated with a given key.
@@ -69,7 +72,7 @@ package object bsonlift {
      * @return
      *     Optional value associated with `k`.
      */
-    def \?(k: String): Option[JavaBsonValue] = Option(underlying.get(k))
+    def getOpt(k: String): Option[JavaBsonValue] = Option(underlying.get(k))
 
     /**
      * Creates a new document which has the same elements as this document
@@ -81,7 +84,7 @@ package object bsonlift {
      *     New document which has the same elements as this document except
      *     the elements associated with the keys in `ks`.
      */
-    def -(ks: String*): JavaBsonDocument = {
+    def --(ks: String*): JavaBsonDocument = {
       // NOTE: does not call underlying.clone() to avoid a deep copy
       val subdoc = (underlying: mutable.Map[String, JavaBsonValue]) -- ks
       new JavaBsonDocument(subdoc.map {

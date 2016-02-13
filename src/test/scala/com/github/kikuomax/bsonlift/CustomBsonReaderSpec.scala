@@ -151,11 +151,11 @@ Specification of a custom BsonReader
           val doc: BsonDocument = bsonDoc
           try {
             CustomType(
-              x = (doc \ "x").as[Int],
-              a = (doc \ "a").as[String],
-              s = (doc \ "s").as[Seq[String]])
+              x = doc.get("x").as[Int],
+              a = doc.get("a").as[String],
+              s = doc.get("s").as[Seq[String]])
           } catch {
-            case ex: NoSuchElementException =>  
+            case ex: NullPointerException =>
               throw BsonReaderException(ex.getMessage)
           }
         }

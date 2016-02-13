@@ -22,37 +22,37 @@ Specification of BsonDocument
       "obj": { "x": "y" }
     }
 
-  ${ (doc \ "str") must be(`"mojiretsu"`) }
-  ${ (doc \ "num") must be(`123`) }
-  ${ (doc \ "obj") must be(`{ "x": "y" }`) }
-  ${ (doc \ "xyz") must throwA[NoSuchElementException] }
+  ${ doc.get("str") must be(`"mojiretsu"`) }
+  ${ doc.get("num") must be(`123`) }
+  ${ doc.get("obj") must be(`{ "x": "y" }`) }
+  ${ doc.get("xyz") must beNull }
 
-  ${ (doc \? "str") must beSome((a: JavaBsonValue) => a must be(`"mojiretsu"`)) }
-  ${ (doc \? "num") must beSome((a: JavaBsonValue) => a must be(`123`)) }
-  ${ (doc \? "obj") must beSome((a: JavaBsonValue) => a must be(`{ "x": "y" }`)) }
-  ${ (doc \? "xyz") must beNone }
+  ${ doc.getOpt("str") must beSome((a: JavaBsonValue) => a must be(`"mojiretsu"`)) }
+  ${ doc.getOpt("num") must beSome((a: JavaBsonValue) => a must be(`123`)) }
+  ${ doc.getOpt("obj") must beSome((a: JavaBsonValue) => a must be(`{ "x": "y" }`)) }
+  ${ doc.getOpt("xyz") must beNone }
 
   Given a new document without "str"
   
-    doc2 = doc - "str"
+    doc2 = doc -- "str"
 
   ${ doc2 must not be(doc) }
-  ${ (doc2 \? "str") must beNone }
-  ${ (doc2 \? "num") must beSome((a: JavaBsonValue) => a must be(`123`)) }
-  ${ (doc2 \? "obj") must beSome((a: JavaBsonValue) => a must be(`{ "x": "y" }`)) }
+  ${ doc2.getOpt("str") must beNone }
+  ${ doc2.getOpt("num") must beSome((a: JavaBsonValue) => a must be(`123`)) }
+  ${ doc2.getOpt("obj") must beSome((a: JavaBsonValue) => a must be(`{ "x": "y" }`)) }
 
   Given a new document without "num", "obj" and "xyz":
 
-    doc3 = doc - ("num", "obj", "xyz")
+    doc3 = doc -- ("num", "obj", "xyz")
 
   ${ doc3 must not be(doc) }
-  ${ (doc3 \? "str") must beSome((a: JavaBsonValue) => a must be(`"mojiretsu"`)) }
-  ${ (doc3 \? "num") must beNone }
-  ${ (doc3 \? "obj") must beNone }
+  ${ doc3.getOpt("str") must beSome((a: JavaBsonValue) => a must be(`"mojiretsu"`)) }
+  ${ doc3.getOpt("num") must beNone }
+  ${ doc3.getOpt("obj") must beNone }
 
 """
 
-  // document to be tested
+  // fixtures for test cases
   val `"mojiretsu"` = new JavaBsonString("mojiretsu")
   val `123` = new JavaBsonInt32(123)
   val `{ "x": "y" }` = new JavaBsonDocument("x", new JavaBsonString("y"))
@@ -61,6 +61,6 @@ Specification of BsonDocument
       new JavaBsonElement("str", `"mojiretsu"`),
       new JavaBsonElement("num", `123`),
       new JavaBsonElement("obj", `{ "x": "y" }`))))
-  val doc2 = doc - "str"
-  val doc3 = doc - ("num", "obj", "xyz")
+  val doc2: BsonDocument = doc -- "str"
+  val doc3: BsonDocument = doc -- ("num", "obj", "xyz")
 }
