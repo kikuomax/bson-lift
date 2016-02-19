@@ -11,5 +11,162 @@ This library would fit if you
 
 If you need a more sophisticated approach, [ReactiveMongo](http://reactivemongo.org) looks nice.
 
-Though a similar work has already done by Jeff May ([Bson ADT](https://github.com/jeffmay/bson-adt)), what really I want is a thin wrapper which retains underlying Java objects and can return them without any cost.
-If you do not need access to raw Java objects, Bson ADT could be a good choice.
+Though a similar work has already been done by Jeff May ([Bson ADT](https://github.com/jeffmay/bson-adt)), what really I want is a thin wrapper which retains underlying Java objects and can return them without any cost.
+If you do not need access to raw Java objects, Bson ADT could be a good candidate.
+
+Prerequisites
+-------------
+
+You need the following software installed,
+ - [Git](https://git-scm.com)
+ - [sbt](http://www.scala-sbt.org)
+
+Importing *bson-lift*
+---------------------
+
+The easiest way to import *bson-lift* to your project is to locally publish it.
+The following are the basic steps,
+
+ 1. Clone the repository somewhere you like and move down to it.
+
+	```shell
+	git clone https://github.com/kikuomax/bson-lift.git
+	cd bson-lift
+	```
+
+ 2. Build and locally publish *bson-lift* by `sbt`.
+
+	```shell
+	sbt +publish-local
+	```
+
+ 3. Add the following dependency to your sbt script,
+
+	```shell
+	libraryDependencies += "com.github.kikuomax" %% "bson-lift" % "0.1.0"
+	```
+
+Using *bson-lift*
+-----------------
+
+Everything is defined in the `com.github.kikuomax.bsonlift` package.
+
+### Accessing fields
+
+```scala
+import com.github.kikuomax.bsonlift._
+
+// example document
+val doc = org.bson.BsonDocument.parse("""{
+  "first": "John",
+  "last": "Flimsy",
+  "weight": 110.2,
+  "height": 74.8,
+  "language": ["English", "Italian", "Japanese"]
+}""")
+
+doc.get("first")  // --> org.bson.BsonString("John")
+doc.get("last")  // --> org.bson.BsonString("Flimsy")
+doc.get("weight")  // --> org.bson.BsonDouble(110.2)
+doc.get("height")  // --> org.bson.BsonDouble(74.8)
+doc.get("language")  // --> org.bson.BsonArray(org.bson.BsonString("English"), org.bson.BsonString("Italian"), org.bson.BsonString("Japanese"))
+
+doc.getOpt("first")  // --> Some(org.bson.BsonString("John"))
+
+doc.get("age")  // --> null
+doc.getOpt("age")  // --> None
+```
+
+### Converting BSON to basic types
+
+There are predefined conversions for the following basic types,
+ - `String`
+ - `Int`
+ - `Long`
+ - `Float`
+ - `Double`
+ - `Boolean`
+ - `Option[T]`
+ - `List[T]`
+ - `Vector[T]`
+ - `Iterable[T]`
+ - `Seq[T]`
+ - `IndexedSeq[T]`
+ - `Set[T]`
+ - `Map[String,T]`
+
+In addition to the basic types, `org.bson.types.ObjectId` is also supported.
+
+```scala
+import com.github.kikuomax.bsonlift._
+
+// example document
+val doc = org.bson.BsonDocument.parse("""{
+  "first": "John",
+  "last": "Flimsy",
+  "weight": 110.2,
+  "height": 74.8,
+  "language": ["English", "Italian", "Japanese"],
+  "age": null
+}""")
+
+doc.get("first").as[String]  // --> "John"
+doc.get("last").as[String]  // --> "Flimsy"
+doc.get("weight").as[Double]  // --> 110.2
+doc.get("height").as[Int]  // --> 74
+doc.get("language").as[List[String]]  // --> List("English", "Italian", "Japanese")
+doc.get("age").as[Option[Int]]  // --> None
+```
+
+### Defining a custom conversion from BSON to your type
+
+You can define a custom conversion for your type by defining implicit `BsonReader` in the scope.
+
+```
+import com.github.kikuomax.bsonlift._
+
+// example document
+val doc = org.bson.BsonDocument.parse("""{
+  "first": "John",
+  "last": "Flimsy",
+  "weight": 110.2,
+  "height": 74.8,
+  "language": ["English", "Italian", "Japanese"]
+}""")
+
+// custom type
+case class Person(first: String, last: String, weight: Double, height: Double, language: List[String])
+
+// implicit conversion
+implicit val bsonToPerson: BsonReader[Person] = new BsonReader[Person] {
+  def read(bson: org.bson.BsonValue): Person = {
+    Person(
+      first = bson.get("first").as[String],
+      last = bson.get("last").as[String],
+      weight = bson.get("weight").as[Double],
+      height = bson.get("height").as[Double],
+      language = bson.get("language").as[List[String]])
+  }
+}
+
+doc.as[Person]  // --> Person("John", "Flimsy", 110.2, 74.8, List("English", "Italian", "Japanese"))
+```
+
+Running tests
+-------------
+
+```shell
+sbt test
+```
+
+Generating documentation
+------------------------
+
+```shell
+sbt doc
+```
+
+License
+-------
+
+[MIT License](https://opensource.org/licenses/MIT)

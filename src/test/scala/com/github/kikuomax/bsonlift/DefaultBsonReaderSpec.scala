@@ -217,29 +217,30 @@ Specification of the implicit conversion of BSON values by default BsonReader
 
 """
 
-  val `"mojiretsu"` = new BsonValue(new JavaBsonString("mojiretsu"))
-  val `1` = new BsonValue(new JavaBsonInt32(1));
+  // fixtures
+  val `"mojiretsu"` = BsonValue(new JavaBsonString("mojiretsu"))
+  val `1` = BsonValue(new JavaBsonInt32(1))
   val `-9223372036854775808` =
-    new BsonValue(new JavaBsonInt64(-9223372036854775808L))
-  val `0.125` = new BsonValue(new JavaBsonDouble(0.125))
-  val `3.14e+307` = new BsonValue(new JavaBsonDouble(3.14e+307))
-  val `3.14e-292` = new BsonValue(new JavaBsonDouble(3.14e-292))
-  val `false` = new BsonValue(JavaBsonBoolean.FALSE)
-  val `true` = new BsonValue(JavaBsonBoolean.TRUE)
-  val `ObjectId("54975b23300408095a2029d7")` = new BsonValue(
+    BsonValue(new JavaBsonInt64(-9223372036854775808L))
+  val `0.125` = BsonValue(new JavaBsonDouble(0.125))
+  val `3.14e+307` = BsonValue(new JavaBsonDouble(3.14e+307))
+  val `3.14e-292` = BsonValue(new JavaBsonDouble(3.14e-292))
+  val `false` = BsonValue(JavaBsonBoolean.FALSE)
+  val `true` = BsonValue(JavaBsonBoolean.TRUE)
+  val `ObjectId("54975b23300408095a2029d7")` = BsonValue(
     new JavaBsonObjectId(new ObjectId("54975b23300408095a2029d7")))
   val `null` = new BsonValue(JavaBsonNull.VALUE)
-  val `undefined` = new BsonValue(new JavaBsonUndefined())
-  val `[1,2,3]` = new BsonValue(new JavaBsonArray(
+  val `undefined` = BsonValue(new JavaBsonUndefined())
+  val `[1,2,3]` = BsonValue(new JavaBsonArray(
     Seq(1, 2, 3).map(new JavaBsonInt32(_))));
-  val `[]` = new BsonValue(new JavaBsonArray())
-  val `["abc","xyz"]` = new BsonValue(new JavaBsonArray(
+  val `[]` = BsonValue(new JavaBsonArray())
+  val `["abc","xyz"]` = BsonValue(new JavaBsonArray(
     Seq("abc", "xyz").map(new JavaBsonString(_))))
-  val `{"x":"abc","y":"def"}` = new BsonValue(new JavaBsonDocument(Seq(
+  val `{"x":"abc","y":"def"}` = BsonValue(new JavaBsonDocument(Seq(
     new JavaBsonElement("x", new JavaBsonString("abc")),
     new JavaBsonElement("y", new JavaBsonString("def")))))
-  val `{}` = new BsonValue(new JavaBsonDocument)
-  val `{"a":123,"b":-5,"c":99}` = new BsonValue(new JavaBsonDocument(Seq(
+  val `{}` = BsonValue(new JavaBsonDocument)
+  val `{"a":123,"b":-5,"c":99}` = BsonValue(new JavaBsonDocument(Seq(
     new JavaBsonElement("a", new JavaBsonInt32(123)),
     new JavaBsonElement("b", new JavaBsonInt32(-5)),
     new JavaBsonElement("c", new JavaBsonInt32(99)))))

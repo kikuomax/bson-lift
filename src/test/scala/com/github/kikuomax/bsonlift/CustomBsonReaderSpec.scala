@@ -88,57 +88,57 @@ Specification of a custom BsonReader
 
 """
 
-  val `123` = new JavaBsonInt32(123)
-  val `"mojiretsu"` = new JavaBsonString("mojiretsu")
+  val `123` = BsonValue(new JavaBsonInt32(123))
+  val `"mojiretsu"` = BsonValue(new JavaBsonString("mojiretsu"))
   val `["x","y","z"]` =
-    new JavaBsonArray(Seq("x", "y", "z").map(new JavaBsonString(_)))
-  val doc = new JavaBsonDocument(Seq(
-    "x" -> new JavaBsonInt32(0),
-    "a" -> new JavaBsonString(""),
-    "s" -> new JavaBsonArray()).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val doc2 = new JavaBsonDocument(Seq(
+    BsonValue(new JavaBsonArray(Seq("x", "y", "z").map(new JavaBsonString(_))))
+  val doc = BsonValue(new JavaBsonDocument(Seq(
+    "x" -> BsonValue(new JavaBsonInt32(0)),
+    "a" -> BsonValue(new JavaBsonString("")),
+    "s" -> BsonValue(new JavaBsonArray())).map {
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val doc2 = BsonValue(new JavaBsonDocument(Seq(
     "x" -> `123`,
     "a" -> `"mojiretsu"`,
     "s" -> `["x","y","z"]`).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val doc3 = new JavaBsonDocument(Seq(
-    "x" -> new JavaBsonString("123"),
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val doc3 = BsonValue(new JavaBsonDocument(Seq(
+    "x" -> BsonValue(new JavaBsonString("123")),
     "a" -> `"mojiretsu"`,
     "s" -> `["x","y","z"]`).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val doc4 = new JavaBsonDocument(Seq(
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val doc4 = BsonValue(new JavaBsonDocument(Seq(
     "x" -> `123`,
-    "a" -> new JavaBsonInt32(4649),
+    "a" -> BsonValue(new JavaBsonInt32(4649)),
     "s" -> `["x","y","z"]`).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val doc5 = new JavaBsonDocument(Seq(
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val doc5 = BsonValue(new JavaBsonDocument(Seq(
     "x" -> `123`,
     "a" -> `"mojiretsu"`,
-    "s" -> new JavaBsonString("xyz")).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val doc6 = new JavaBsonDocument(Seq(
+    "s" -> BsonValue(new JavaBsonString("xyz"))).map {
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val doc6 = BsonValue(new JavaBsonDocument(Seq(
     "a" -> `"mojiretsu"`,
     "s" -> `["x","y","z"]`).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val doc7 = new JavaBsonDocument(Seq(
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val doc7 = BsonValue(new JavaBsonDocument(Seq(
     "x" -> `123`,
     "s" -> `["x","y","z"]`).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val doc8 = new JavaBsonDocument(Seq(
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val doc8 = BsonValue(new JavaBsonDocument(Seq(
     "x" -> `123`,
     "a" -> `"mojiretsu"`).map {
-      case (k, v) => new JavaBsonElement(k, v)
-    })
-  val `null` = JavaBsonNull.VALUE
-  val `undefined` = new JavaBsonUndefined()
+      case (k, v) => new JavaBsonElement(k, v.underlying)
+    }))
+  val `null` = BsonValue(JavaBsonNull.VALUE)
+  val `undefined` = BsonValue(new JavaBsonUndefined())
 
   /** Custom type for test. */
   case class CustomType(x: Int, a: String, s: Seq[String])

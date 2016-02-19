@@ -2,7 +2,8 @@ package com.github.kikuomax.bsonlift
 
 import org.bson.{
   BsonDocument => JavaBsonDocument,
-  BsonInvalidOperationException,
+  BsonElement => JavaBsonElement,
+  BsonInt32 => JavaBsonInt32,
   BsonString => JavaBsonString,
   BsonValue => JavaBsonValue
 }
@@ -13,41 +14,42 @@ class ImplicitBsonSpec extends Specification { def is = s2"""
 
 Specification of Implicit conversions from BSON values.
 
-  org.bson.BsonValue can implicitly become a BsonValue  ${valueToValueTest}
-  org.bson.BsonDocument can implicitly become a BsonDocument  ${documentToDocumentTest}
-  org.bson.BsonValue can implicitly become a BsonDocument  ${valueToDocumentTest}
-  BsonDocument can implicitly become a BsonValue  ${documentToValueTest}
-  org.bson.BsonInvalidOperationException should be thrown
-  if a non-document org.bson.BsonValue tries to become a BsonDocument  ${improperValueToDocument}
+  org.bson.BsonValue --> BsonValue
+  ${ `"mojiretsu"`.as[String] must_== "mojiretsu" }
+  ${ `{ "x": 123 }`.as[CustomType] must_== CustomType(x=123) }
+
+  org.bson.BsonDocument --> BsonDocument
+  ${ `{ "x": 123 }`.getOpt("x").map(_.as[Int]) must beSome(123) }
+  ${ (`{ "x": 123 }` -- "x").getOpt("x") must beNone }
+
+  org.bson.BsonValue --> BsonDocument
+  ${ `"mojiretsu"`.getOpt("x") must beNone }
+
+  BsonDocument --> BsonValue
+  ${ `{ "y": { "x": 123 } }`.getOpt("y").map(_.as[CustomType]) must beSome(CustomType(x=123)) }
+
+  BsonValue --> org.bson.BsonValue
+  ${ BsonValue(`"mojiretsu"`).asString.getValue must_== "mojiretsu" }
+
+  BsonDocument --> org.bson.BsonDocument
+  ${ ValidBsonDocument(`{ "x": 123 }`).containsKey("x") must beTrue }
 
 """
 
-  def valueToValueTest = {
-    val java: JavaBsonValue = new JavaBsonString("test")
-    val scala: BsonValue = java
-    success
-  }
+  // fixtures
+  val `"mojiretsu"` = new JavaBsonString("mojiretsu")
+  val `{ "x": 123 }` = new JavaBsonDocument(
+    java.util.Arrays.asList(new JavaBsonElement("x", new JavaBsonInt32(123))))
+  val `{ "y": { "x": 123 } }` = new JavaBsonDocument(
+    java.util.Arrays.asList(new JavaBsonElement("y", `{ "x": 123 }`)))
 
-  def documentToDocumentTest = {
-    val java: JavaBsonDocument = new JavaBsonDocument()
-    val scala: BsonDocument = java
-    success
-  }
+  // custom type
+  case class CustomType(x: Int)
 
-  def valueToDocumentTest = {
-    val value: JavaBsonValue = new JavaBsonDocument()
-    val doc: BsonDocument = value
-    success
-  }
-
-  def documentToValueTest = {
-    val doc: BsonDocument = new BsonDocument(new JavaBsonDocument())
-    val value: BsonValue = doc
-    success
-  }
-
-  def improperValueToDocument = {
-    val value: JavaBsonValue = new JavaBsonString("test")
-    (value: BsonDocument) must throwA[BsonInvalidOperationException]
-  }
+  // implicit conversion from BSON to CustomType
+  implicit val bsonToCustomType: BsonReader[CustomType] =
+    new BsonReader[CustomType] {
+      override def read(bson: JavaBsonValue): CustomType =
+        CustomType(x = bson.get("x").as[Int])
+    }
 }

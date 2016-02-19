@@ -4,7 +4,7 @@ name := "bson-lift"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.11.7"
+crossScalaVersions := Seq("2.11.7", "2.10.6")
 
 scalacOptions := Seq("-feature", "-deprecation", "-unchecked", "-encoding", "utf-8")
 
