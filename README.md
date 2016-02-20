@@ -1,5 +1,7 @@
 *bson-lift* augments BSON classes provided by [Java MongoDB Driver](https://docs.mongodb.org/ecosystem/drivers/java/) with operations useful for Scala.
 
+[![Build Status](https://travis-ci.org/kikuomax/bson-lift.svg?branch=master)](https://travis-ci.org/kikuomax/bson-lift)
+
 Who needs this library?
 -----------------------
 
