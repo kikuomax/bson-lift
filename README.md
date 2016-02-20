@@ -42,7 +42,7 @@ The following are the basic steps,
 
  3. Add the following dependency to your sbt script,
 
-	```shell
+	```scala
 	libraryDependencies += "com.github.kikuomax" %% "bson-lift" % "0.1.0"
 	```
 
@@ -116,7 +116,7 @@ doc.get("age").as[Option[Int]]  // --> None
 
 You can define a custom conversion for your type by defining implicit `BsonReader` in the scope.
 
-```
+```scala
 import com.github.kikuomax.bsonlift._
 
 // example document
