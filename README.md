@@ -53,27 +53,21 @@ Everything is defined in the `com.github.kikuomax.bsonlift` package.
 
 ### Accessing fields
 
+Any `org.bson.BsonDocument` can implicitly be a `com.github.kikuomax.bsonlift.BsonDocument` (say `BsonDocument`).
+
+`BsonDocument` has `getOpt` function.
+
 ```scala
 import com.github.kikuomax.bsonlift._
 
 // example document
 val doc = org.bson.BsonDocument.parse("""{
-  "first": "John",
-  "last": "Flimsy",
-  "weight": 110.2,
-  "height": 74.8,
-  "language": ["English", "Italian", "Japanese"]
+  "name": "John Flimsy",
+  "weight": 110.2
 }""")
 
-doc.get("first")  // --> org.bson.BsonString("John")
-doc.get("last")  // --> org.bson.BsonString("Flimsy")
-doc.get("weight")  // --> org.bson.BsonDouble(110.2)
-doc.get("height")  // --> org.bson.BsonDouble(74.8)
-doc.get("language")  // --> org.bson.BsonArray(org.bson.BsonString("English"), org.bson.BsonString("Italian"), org.bson.BsonString("Japanese"))
-
-doc.getOpt("first")  // --> Some(org.bson.BsonString("John"))
-
-doc.get("age")  // --> null
+doc.getOpt("name")  // --> Some(org.bson.BsonString("John Flimsy"))
+doc.getOpt("weight")  // --> Some(org.bson.BsonDouble(110.2))
 doc.getOpt("age")  // --> None
 ```
 

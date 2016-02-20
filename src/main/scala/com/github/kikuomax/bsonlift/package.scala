@@ -13,6 +13,21 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 package object bsonlift {
+  /** General wrapper of an `org.bson.BsonValue`. */
+  trait BsonWrapper {
+    /** Underlying BSON value. */
+    val underlying: JavaBsonValue
+  }
+
+  /** Companion object of [[BsonWrapper]]. */
+  object BsonWrapper {
+    /**
+     * Conversion from a [[BsonWrapper]] to its underlying `org.bson.BsonValue`.
+     */
+    implicit def wrapperToJavaValue(wrapper: BsonWrapper): JavaBsonValue =
+      wrapper.underlying
+  }
+
   /**
    * Augmented `org.bson.BsonValue`.
    *
@@ -22,14 +37,16 @@ package object bsonlift {
    * @param underlying
    *     Underlying BSON value.
    */
-  implicit class BsonValue(val underlying: JavaBsonValue) {
+  implicit class BsonValue(override val underlying: JavaBsonValue)
+    extends BsonWrapper
+  {
     /**
      * Converts the underlying BSON value into a given type.
      *
      * @tparam T
      *     Type of the destination value.
      * @param reader
-     *     Converter from the underlying BSON value into a value of the type
+     *     Conversion from the underlying BSON value to a value of the type
      *     `T`.
      * @return
      *     Value of the type `T` equivalent to the underlying BSON value.
@@ -42,7 +59,7 @@ package object bsonlift {
   /** Companion object of [[BsonValue]]. */
   object BsonValue {
     /**
-     * Converts a given [[BsonValue]] into its underlying `org.bson.BsonValue`.
+     * Conversion from a [[BsonValue]] to its underlying `org.bson.BsonValue`.
      */
     implicit def valueToJavaValue(bson: BsonValue): JavaBsonValue =
       bson.underlying
@@ -53,12 +70,11 @@ package object bsonlift {
    *
    * Any `org.bson.BsonValue` can implicitly become [[BsonDocument]].
    *
-   * There is a subclass [[ValidBsonDocument]] which wraps an
-   * `org.bson.BsonDocument`.
-   * There also is a subclass [[InvalidBsonDocument]] which wraps a non-document
-   * value.
+   * There are two subclasses [[ValidBsonDocument]] and [[InvalidBsonDocument]]
+   * which wrap an `org.bson.BsonDocument` and an non-document
+   * `org.bson.BsonValue` respectively.
    */
-  sealed trait BsonDocument {
+  trait BsonDocument extends BsonWrapper {
     /**
      * Returns the value associated with a given key.
      *
@@ -101,51 +117,32 @@ package object bsonlift {
      *     `this` instance if this document does not wrap a valid document.
      */
     def --(ks: String*): BsonDocument
-
-    /** Underlying *raw* BSON value of this document. */
-    def underlying: JavaBsonValue
   }
-
-  /** Converts a given `org.bson.BsonValue` into a [[BsonDocument]]. */
-  implicit def javaValueToDocument(value: JavaBsonValue): BsonDocument =
-    BsonDocument.javaValueToDocument(value)
-
-  /**
-   * Converts a given `org.bson.BsonDocument` into a [[ValidBsonDocument]].
-   */
-  implicit def javaDocumentToDocument(doc: JavaBsonDocument):
-    ValidBsonDocument = ValidBsonDocument(doc)
 
   /** Companion object of [[BsonDocument]]. */
   object BsonDocument {
     /**
-     * Converts a given [[BsonDocument]] document into its underlying
-     * `org.bson.BsonValue`.
-     */
-    implicit def documentToJavaValue(doc: BsonDocument): JavaBsonValue =
-      doc.underlying
-
-    /**
-     * Converts a given value into a [[BsonDocument]].
-     *
-     * @param value
-     *     Value to be converted into a [[BsonDocument]].
-     * @return
-     *     [[ValidBsonDocument]] which wraps `value` if `value` is a BSON
-     *     document.
-     *     [[InvalidBsonDocument]] otherwise.
-     */
-    implicit def javaValueToDocument(value: JavaBsonValue): BsonDocument =
-      if (value.isDocument) ValidBsonDocument(value.asDocument)
-      else InvalidBsonDocument(value)
-
-    /**
-     * Converts a given [[BsonDocument]] into a [[BsonValue]] which wraps
-     * the same underlying value as the document.
+     * Conversion from a [[BsonDocument]] to a [[BsonValue]] which wraps
+     * the same underlying value as the given document.
      */
     implicit def documentToValue(doc: BsonDocument): BsonValue =
-      new BsonValue(doc.underlying)
+      BsonValue(doc.underlying)
   }
+
+  /**
+   * Conversion from a `org.bson.BsonValue` into a [[BsonDocument]] which wraps
+   * it.
+   *
+   * @param value
+   *     Value to be converted into a [[BsonDocument]].
+   * @return
+   *     [[ValidBsonDocument]] which wraps `value` if `value` is actually
+   *     a BSON document.
+   *     [[InvalidBsonDocument]] which wraps `value` otherwise.
+    */
+  implicit def javaValueToDocument(value: JavaBsonValue): BsonDocument =
+    if (value.isDocument) ValidBsonDocument(value.asDocument)
+    else InvalidBsonDocument(value)
 
   /**
    * [[BsonDocument]] which wraps an `org.bson.BsonDocument`.
@@ -154,7 +151,7 @@ package object bsonlift {
    * @param underlying
    *     Underlying BSON document.
    */
-  case class ValidBsonDocument(override val underlying: JavaBsonDocument)
+  implicit class ValidBsonDocument(override val underlying: JavaBsonDocument)
     extends BsonDocument
   {
     override def get(k: String): JavaBsonValue = underlying.get(k)
@@ -174,7 +171,7 @@ package object bsonlift {
   /** Companion object of [[ValidBsonDocument]]. */
   object ValidBsonDocument {
     /**
-     * Converts a [[ValidBsonDocument]] to its underlying
+     * Conversion from a [[ValidBsonDocument]] to its underlying
      * `org.bson.BsonDocument`.
      */
     implicit def documentToJavaDocument(doc: ValidBsonDocument):
