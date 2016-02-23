@@ -20,7 +20,9 @@ Specification of BsonDocument which wraps a non-document value
   ${ doc.underlying must be(`"mojiretsu"`) }
   ${ doc.get("key") must beNull }
   ${ doc.getOpt("key") must beNone }
-  ${ (doc -- ("key")) must be(doc) }
+  ${ (doc - "key") must be(doc) }
+  ${ (doc - ("k1", "k2")) must be(doc) }
+  ${ (doc -- Seq("k1", "k2", "k3")) must be(doc) }
 
   Given the following BsonDocument wrapping a BSON number
 
@@ -29,7 +31,9 @@ Specification of BsonDocument which wraps a non-document value
   ${ doc2.underlying must be(`123`) }
   ${ doc2.get("x") must beNull }
   ${ doc2.getOpt("x") must beNone }
-  ${ (doc2 -- ("x")) must be(doc2) }
+  ${ (doc2 - "x") must be(doc2) }
+  ${ (doc2 - ("x", "y")) must be(doc2) }
+  ${ (doc2 -- Seq("x", "y", "z")) must be(doc2) }
 
   Given the following BsonDocument wrapping a BSON array
 
@@ -38,7 +42,9 @@ Specification of BsonDocument which wraps a non-document value
   ${ doc3.underlying must be(`["x","y","z"]`) }
   ${ doc3.get("name") must beNull }
   ${ doc3.getOpt("name") must beNone }
-  ${ (doc3 -- ("name")) must be(doc3) }
+  ${ (doc3 - "name") must be(doc3) }
+  ${ (doc3 - ("name", "nome")) must be(doc3) }
+  ${ (doc3 -- Seq("name", "nome", "namae")) must be(doc3) }
 
 """
 

@@ -34,7 +34,7 @@ Specification of BsonDocument which wraps a valid document
 
   Given a new BsonDocument without "str"
   
-    doc2 = doc -- "str"
+    doc2 = doc - "str"
 
   ${ doc2 must not be(doc) }
 
@@ -46,9 +46,9 @@ Specification of BsonDocument which wraps a valid document
   ${ doc2.getOpt("num") must beSomeBsonValue(`123`) }
   ${ doc2.getOpt("obj") must beSomeBsonValue(`{ "x": "y" }`) }
 
-  Given a new BsonDocument without "num", "obj" and "xyz":
+  Given a new BsonDocument without "num" and "obj":
 
-    doc3 = doc -- ("num", "obj", "xyz")
+    doc3 = doc - ("num", "obj")
 
   ${ doc3 must not be(doc) }
 
@@ -60,11 +60,25 @@ Specification of BsonDocument which wraps a valid document
   ${ doc3.getOpt("num") must beNone }
   ${ doc3.getOpt("obj") must beNone }
 
+  Given a new BsonDocument without "str", "obj" and "xyz":
+
+    doc4 = doc -- Seq("str", "obj", "xyz")
+
+  ${ doc4 must not be(doc) }
+
+  ${ doc4.get("str") must beNull }
+  ${ doc4.get("num") must be(`123`) }
+  ${ doc4.get("obj") must beNull }
+
+  ${ doc4.getOpt("str") must beNone }
+  ${ doc4.getOpt("num") must beSomeBsonValue(`123`) }
+  ${ doc4.getOpt("obj") must beNone }
+
   Given the following BsonDocument:
 
-    doc4 = { "x": "y" }
+    doc5 = { "x": "y" }
 
-  ${ doc4.underlying must be(`{ "x": "y" }`) }
+  ${ doc5.underlying must be(`{ "x": "y" }`) }
 
 """
 
@@ -77,9 +91,10 @@ Specification of BsonDocument which wraps a valid document
       new JavaBsonElement("str", `"mojiretsu"`),
       new JavaBsonElement("num", `123`),
       new JavaBsonElement("obj", `{ "x": "y" }`))))
-  val doc2 = ValidBsonDocument(doc -- "str")
-  val doc3 = ValidBsonDocument(doc -- ("num", "obj", "xyz"))
-  val doc4 = ValidBsonDocument(`{ "x": "y" }`)
+  val doc2 = ValidBsonDocument(doc - "str")
+  val doc3 = ValidBsonDocument(doc - ("num", "obj"))
+  val doc4 = ValidBsonDocument(doc -- Seq("str", "obj", "xyz"))
+  val doc5 = ValidBsonDocument(`{ "x": "y" }`)
 
   /** Expectation for some raw BSON value. */
   def beSomeBsonValue(b: JavaBsonValue) =

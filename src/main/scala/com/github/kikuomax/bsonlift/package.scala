@@ -9,7 +9,10 @@ import scala.collection.JavaConversions.{
   mapAsScalaMap,
   seqAsJavaList
 }
-import scala.collection.mutable
+import scala.collection.{
+  GenTraversableOnce,
+  mutable
+}
 import scala.language.implicitConversions
 
 package object bsonlift {
@@ -71,7 +74,7 @@ package object bsonlift {
    * Any `org.bson.BsonValue` can implicitly become [[BsonDocument]].
    *
    * There are two subclasses [[ValidBsonDocument]] and [[InvalidBsonDocument]]
-   * which wrap an `org.bson.BsonDocument` and an non-document
+   * which wrap an `org.bson.BsonDocument` and a non-document
    * `org.bson.BsonValue` respectively.
    */
   trait BsonDocument extends BsonWrapper {
@@ -105,18 +108,52 @@ package object bsonlift {
 
     /**
      * Creates a new document which has the same elements as this document
+     * except the element associated with a given key.
+     *
+     * Has no effect and returns `this` if this document does not wrap an
+     * actual document.
+     *
+     * @param k
+     *     Key to be excluded.
+     * @return
+     *     New document which has the same elements as this document except
+     *     the element associated with `k`.
+     */
+    def -(k: String): BsonDocument
+
+    /**
+     * Creates a new document which has the same elements as this document
      * except the elements associated with given keys.
      *
-     * Has no effect if this document does not wrap a valid document.
+     * Has no effect and returns `this` if this document does not wrap an
+     * actual document.
+     *
+     * @param k1
+     *     Key to be excluded.
+     * @param k2
+     *     Another key to be excluded.
+     * @param ks
+     *     Other keys to be excluded.
+     * @return
+     *     New document which has the same elements as this document except
+     *     the elements associated with the given keys (`k1`, `k2` and `ks`).
+     */
+    def -(k1: String, k2: String, ks: String*): BsonDocument
+
+    /**
+     * Creates a new document which has the same elements as this document
+     * except the elements associated with given keys.
+     *
+     * Has no effect and returns `this` if this document does not wrap an
+     * actual document.
      *
      * @param ks
-     *     Keys to be removed.
+     *     Keys to be excluded.
      * @return
      *     New document which has the same elements as this document except
      *     the elements associated with the keys in `ks`.
-     *     `this` instance if this document does not wrap a valid document.
      */
-    def --(ks: String*): BsonDocument
+    def --(ks: GenTraversableOnce[String]): BsonDocument
   }
 
   /** Companion object of [[BsonDocument]]. */
@@ -159,13 +196,20 @@ package object bsonlift {
     override def getOpt(k: String): Option[JavaBsonValue] =
       Option(underlying.get(k))
 
-    override def --(ks: String*): ValidBsonDocument = {
-      // NOTE: does not call underlying.clone() to avoid a deep copy
-      val subdoc = (underlying: mutable.Map[String, JavaBsonValue]) -- ks
-      ValidBsonDocument(new JavaBsonDocument(subdoc.map {
+    override def -(k: String): ValidBsonDocument =
+      mapToDocument(mapAsScalaMap(underlying) - k)
+
+    override def -(k1: String, k2: String, ks: String*): ValidBsonDocument =
+      mapToDocument(mapAsScalaMap(underlying) - (k1, k2, ks:_*))
+
+    override def --(ks: GenTraversableOnce[String]): ValidBsonDocument =
+      mapToDocument(mapAsScalaMap(underlying) -- ks)
+
+    /** Converts a given map to a document. */
+    private def mapToDocument(map: collection.Map[String, JavaBsonValue]) =
+      ValidBsonDocument(new JavaBsonDocument(map.map {
         case (k, v) => new JavaBsonElement(k, v)
       }(collection.breakOut): List[JavaBsonElement]))
-    }
   }
 
   /** Companion object of [[ValidBsonDocument]]. */
@@ -195,6 +239,12 @@ package object bsonlift {
     override def getOpt(k: String): Option[JavaBsonValue] = None
 
     /** `this` always. */
-    override def --(ks: String*): BsonDocument = this
+    override def -(k: String): BsonDocument = this
+
+    /** `this` always. */
+    override def -(k1: String, k2: String, ks: String*): BsonDocument = this
+
+    /** `this` always. */
+    override def --(ks: GenTraversableOnce[String]): BsonDocument = this
   }
 }

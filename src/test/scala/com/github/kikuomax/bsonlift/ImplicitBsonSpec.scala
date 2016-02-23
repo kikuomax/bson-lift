@@ -20,7 +20,7 @@ Specification of Implicit conversions from BSON values.
 
   org.bson.BsonDocument --> BsonDocument
   ${ `{ "x": 123 }`.getOpt("x").map(_.as[Int]) must beSome(123) }
-  ${ (`{ "x": 123 }` -- "x").getOpt("x") must beNone }
+  ${ (`{ "x": 123 }` - "x").getOpt("x") must beNone }
 
   org.bson.BsonValue --> BsonDocument
   ${ `"mojiretsu"`.getOpt("x") must beNone }
