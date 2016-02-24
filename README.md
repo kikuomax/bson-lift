@@ -45,7 +45,7 @@ The following are the basic steps,
  3. Add the following dependency to your sbt script,
 
 	```scala
-	libraryDependencies += "com.github.kikuomax" %% "bson-lift" % "0.1.0"
+	libraryDependencies += "com.github.kikuomax" %% "bson-lift" % "0.2.1"
 	```
 
 Using *bson-lift*
